@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
+<title>Demir Drop</title>
+<style>
+  :root {
+    --zemin:#111113; --yuzey:#1c1c1e; --yuzey2:#2c2c2e; --cizgi:rgba(120,120,128,.28);
+    --yazi:#f5f5f7; --soluk:rgba(235,235,245,.58); --mavi:#0a84ff; --yesil:#30d158; --kirmizi:#ff453a; --halka:rgba(10,132,255,.3);
+  }
+  @media (prefers-color-scheme: light) { :root {
+    --zemin:#f2f2f7; --yuzey:#fff; --yuzey2:#e5e5ea; --cizgi:rgba(60,60,67,.2);
+    --yazi:#1d1d1f; --soluk:rgba(60,60,67,.65); --mavi:#007aff; --yesil:#28a745; --kirmizi:#d70015; --halka:rgba(0,122,255,.25);
+  } }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--zemin); color:var(--yazi); font:14px/1.35 "Segoe UI Variable Text","Segoe UI",sans-serif;
+         display:grid; grid-template-columns:minmax(330px,42%) 1fr; overflow:hidden; user-select:none; }
+  button { font:inherit; color:inherit; background:var(--yuzey2); border:0; border-radius:8px; min-height:34px; padding:0 13px; cursor:pointer; }
+  button:hover { filter:brightness(1.15); }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--mavi); outline-offset:1px; }
+
+  .sol { position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:20px 18px 16px; }
+  .sol h1 { margin:0; font-size:17px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .sol h1 img { width:24px; height:24px; }
+  #baglanti { font-size:12.5px; color:var(--soluk); margin-top:1px; }
+  .radar { position:relative; flex:1; width:100%; display:grid; place-items:center; min-height:0; }
+  .halka { position:absolute; left:50%; top:50%; border-radius:50%; border:1px solid var(--halka); transform:translate(-50%,-50%); }
+  .h1 { width:250px; height:250px; } .h2 { width:350px; height:350px; opacity:.6; } .h3 { width:460px; height:460px; opacity:.3; }
+  .dalga { position:absolute; left:50%; top:50%; width:150px; height:150px; margin:-75px; border-radius:50%; border:1.5px solid var(--mavi); opacity:0; animation:dalga 3.2s ease-out infinite; }
+  .dalga.d2 { animation-delay:1.6s; }
+  @keyframes dalga { 0% { transform:scale(.8); opacity:.5; } 100% { transform:scale(3.1); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .dalga { animation:none; } }
+
+  .orta { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:9px; text-align:center; }
+  .qr { width:184px; height:184px; padding:8px; background:#fff; border-radius:16px; box-shadow:0 10px 34px rgba(0,0,0,.28); }
+  .qr img { width:100%; height:100%; display:block; }
+  .telefon { width:112px; height:112px; border-radius:50%; display:grid; place-items:center; color:#fff; background:linear-gradient(180deg,#5aa9ff,#0a6be0); box-shadow:0 8px 28px rgba(10,132,255,.35); }
+  .telefon svg { width:50px; height:50px; }
+  .etiket { font-weight:600; }
+  .kucukyazi { font-size:12.5px; color:var(--soluk); max-width:240px; }
+  .baglantili .qr, .baglantisiz .telefon { display:none; }
+  #qrGoster { background:none; color:var(--mavi); min-height:24px; padding:0; }
+  .baglantisiz #qrGoster { display:none; }
+  .qrzorla .qr { display:block; } .qrzorla .telefon { display:none; }
+
+  .altsol { width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px; position:relative; z-index:1; }
+  .anahtar { display:flex; align-items:center; gap:8px; color:var(--soluk); cursor:pointer; font-size:12.5px; }
+  .anahtar input { accent-color:var(--mavi); width:15px; height:15px; margin:0; }
+  #ipbilgi { font-size:12px; color:var(--soluk); font-variant-numeric:tabular-nums; }
+
+  .sag { background:var(--yuzey); border-left:1px solid var(--cizgi); display:flex; flex-direction:column; min-height:0; }
+  .kesit { padding:14px 16px 0; }
+  .kesit h2, .baslikli h2 { font-size:12.5px; font-weight:600; color:var(--soluk); margin:0; }
+  .gonder { display:flex; gap:8px; }
+  .gonder input { flex:1; min-width:0; min-height:34px; padding:0 11px; font:inherit; color:var(--yazi); background:var(--zemin); border:1px solid var(--cizgi); border-radius:8px; user-select:text; }
+  .birincil { background:var(--mavi); color:#fff; font-weight:600; }
+
+  .baslikli { display:flex; justify-content:space-between; align-items:center; min-height:28px; margin-bottom:6px; }
+  .baslikli button { background:none; color:var(--mavi); min-height:24px; padding:0; }
+  #rafKesit { max-height:33%; display:flex; flex-direction:column; min-height:0; }
+  #raf { overflow:auto; }
+  .raf { display:flex; align-items:center; gap:10px; padding:6px 0; border-top:1px solid var(--cizgi); }
+  .raf .ad { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .raf .hal { font-size:12.5px; color:var(--soluk); white-space:nowrap; }
+  .raf .hal.tamam { color:var(--yesil); }
+  .raf .sil { background:none; min-height:24px; width:24px; padding:0; color:var(--soluk); }
+
+  #gelenKesit { flex:1; min-height:0; display:flex; flex-direction:column; padding-bottom:12px; }
+  #galeri { flex:1; overflow:auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:8px; align-content:start; padding-right:2px; }
+  .kart { all:unset; cursor:pointer; display:block; border-radius:10px; overflow:hidden; background:var(--zemin); }
+  .kart:hover { filter:brightness(1.1); }
+  .kart:focus-visible { outline:2px solid var(--mavi); }
+  .kart .gorsel { width:100%; aspect-ratio:4/3; display:grid; place-items:center; background:var(--yuzey2); color:var(--soluk); font-weight:600; font-size:12px; }
+  .kart img { width:100%; height:100%; object-fit:cover; display:block; }
+  .kart .ad { padding:6px 8px 0; font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .kart .bilgi { padding:0 8px 7px; font-size:11.5px; color:var(--soluk); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  #bosGelen { color:var(--soluk); font-size:13px; padding:26px 12px; text-align:center; grid-column:1/-1; }
+
+  #uyari { display:none; position:absolute; left:12px; right:12px; bottom:58px; z-index:2; background:var(--yuzey); border:1px solid var(--kirmizi); border-radius:10px; padding:9px 11px; font-size:12.5px; }
+  #uyari button { margin-top:6px; background:var(--kirmizi); color:#fff; display:block; }
+
+  #birak { position:fixed; inset:0; z-index:9; display:none; place-items:center; background:rgba(10,132,255,.2); border:3px solid var(--mavi); pointer-events:none; }
+  #birak span { background:var(--mavi); color:#fff; font-size:18px; font-weight:600; padding:12px 22px; border-radius:24px; }
+  body.surukleniyor #birak { display:grid; }
+</style>
+</head>
+<body>
+<section class="sol baglantisiz" id="sol">
+  <h1><img src="../ikon.png" alt="">Demir Drop</h1>
+  <div id="baglanti">iPhone'u bekliyor</div>
+  <div class="radar">
+    <div class="halka h1"></div><div class="halka h2"></div><div class="halka h3"></div>
+    <div class="dalga"></div><div class="dalga d2"></div>
+    <div class="orta">
+      <div class="qr"><img src="qr.svg" alt="iPhone ile okutulacak QR kod"></div>
+      <div class="telefon">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 2h8a2.5 2.5 0 0 1 2.5 2.5v15A2.5 2.5 0 0 1 16 22H8a2.5 2.5 0 0 1-2.5-2.5v-15A2.5 2.5 0 0 1 8 2Zm2 1.75a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4Z"/></svg>
+      </div>
+      <div class="etiket" id="ortaBaslik">iPhone kamerasıyla okut</div>
+      <div class="kucukyazi" id="ortaYazi">Ya da ana ekrandaki Demir Drop'u aç. Aynı modemde olman lazım.</div>
+      <button id="qrGoster">QR'ı göster</button>
+    </div>
+  </div>
+  <div id="uyari">Güvenlik duvarı telefonu içeri almıyor.<button id="kuralVer">İzin ver</button></div>
+  <div class="altsol">
+    <label class="anahtar"><input type="checkbox" id="baslangic"> Windows'la başlasın</label>
+    <span id="ipbilgi"></span>
+  </div>
+</section>
+
+<section class="sag">
+  <div class="kesit gonder">
+    <button class="birincil" id="dosyaSec">Dosya seç</button>
+    <input id="metin" placeholder="iPhone'a metin ya da link at" aria-label="iPhone'a atılacak metin">
+    <button id="metinAt">At</button>
+  </div>
+
+  <div class="kesit" id="rafKesit" hidden>
+    <div class="baslikli"><h2>iPhone'a gidenler</h2><button id="rafBosalt">Temizle</button></div>
+    <div id="raf"></div>
+  </div>
+
+  <div class="kesit" id="gelenKesit">
+    <div class="baslikli"><h2>iPhone'dan gelenler</h2><button id="klasor">Klasörü aç</button></div>
+    <div id="galeri"></div>
+  </div>
+</section>
+
+<div id="birak"><span>Bırak, iPhone'a gitsin</span></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const api = () => window.pywebview && window.pywebview.api;
+const el = (t, s, y) => { const e = document.createElement(t); if (s) e.className = s; if (y !== undefined) e.textContent = y; return e; };
+function boyut(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(0) + " KB";
+  if (b < 1073741824) return (b / 1048576).toFixed(1) + " MB";
+  return (b / 1073741824).toFixed(2) + " GB";
+}
+
+let surum = 0, sonIp = null, qrZorla = false;
+
+function rafCiz(raf) {
+  $("rafKesit").hidden = !raf.length;
+  $("rafKesit").style.display = raf.length ? "" : "none";
+  $("raf").replaceChildren(...raf.map(o => {
+    const s = el("div", "raf");
+    s.append(el("span", "ad", o.tur === "metin" ? o.metin : o.ad));
+    s.append(el("span", "hal" + (o.alindi ? " tamam" : ""), o.alindi ? "Alındı" : "Bekliyor"));
+    const x = el("button", "sil", "×");
+    x.setAttribute("aria-label", "Kaldır");
+    x.onclick = async () => { await fetch("../api/kaldir/" + o.id, { method: "POST" }); tazele(); };
+    s.append(x);
+    return s;
+  }));
+}
+
+function galeriCiz(gelenler) {
+  if (!gelenler.length) {
+    $("galeri").replaceChildren(el("div", "", ""));
+    $("galeri").firstChild.id = "bosGelen";
+    $("galeri").firstChild.textContent = "Henüz bir şey gelmedi. Gelenler burada, orijinal çözünürlüğüyle görünür.";
+    return;
+  }
+  $("galeri").replaceChildren(...gelenler.map(g => {
+    const k = el("button", "kart");
+    k.title = g.ad;
+    const v = el("div", "gorsel");
+    if (g.gorsel) { const i = el("img"); i.src = "kucuk/" + g.id; i.alt = ""; i.loading = "lazy"; v.append(i); }
+    else v.textContent = g.bicim || "DOSYA";
+    k.append(v, el("div", "ad", g.ad),
+      el("div", "bilgi", [g.cozunurluk, g.bicim, boyut(g.boyut)].filter(Boolean).join(" · ")));
+    k.onclick = () => api().ac(g.id);
+    return k;
+  }));
+}
+
+async function tazele() {
+  let d;
+  try { d = await (await fetch("durum", { cache: "no-store" })).json(); } catch { return; }
+  const sol = $("sol");
+  sol.classList.toggle("baglantili", d.bagli);
+  sol.classList.toggle("baglantisiz", !d.bagli);
+  sol.classList.toggle("qrzorla", d.bagli && qrZorla);
+  $("baglanti").textContent = d.bagli ? "iPhone bağlı" : "iPhone'u bekliyor";
+  $("ortaBaslik").textContent = d.bagli ? (qrZorla ? "iPhone kamerasıyla okut" : "iPhone") : "iPhone kamerasıyla okut";
+  $("ortaYazi").textContent = d.bagli ? "Dosyayı pencereye sürükle, telefonda onay kartı çıksın." : "Ya da ana ekrandaki Demir Drop'u aç. Aynı modemde olman lazım.";
+  $("qrGoster").textContent = qrZorla ? "QR'ı gizle" : "QR'ı göster";
+  $("ipbilgi").textContent = d.ip ? `${d.ip}:${d.port}` : "";
+  $("uyari").style.display = d.kural === false ? "block" : "none";
+  if (document.activeElement !== $("baslangic")) $("baslangic").checked = !!d.baslangic;
+  if (d.ip !== sonIp) { sonIp = d.ip; document.querySelector(".qr img").src = "qr.svg?" + Date.now(); }
+  if (d.surum !== surum) { surum = d.surum; rafCiz(d.raf); galeriCiz(d.gelenler); }
+}
+
+$("qrGoster").onclick = () => { qrZorla = !qrZorla; tazele(); };
+$("dosyaSec").onclick = () => api().dosya_sec();
+$("klasor").onclick = () => api().klasor_ac();
+$("rafBosalt").onclick = async () => { await api().raf_bosalt(); tazele(); };
+$("kuralVer").onclick = () => api().kural_iste();
+$("baslangic").onchange = e => api().baslangic(e.target.checked);
+async function metinAt() {
+  const m = $("metin").value.trim();
+  if (!m) return;
+  await api().metin_at(m);
+  $("metin").value = "";
+  tazele();
+}
+$("metinAt").onclick = metinAt;
+$("metin").addEventListener("keydown", e => { if (e.key === "Enter") metinAt(); });
+
+/* sürükleme görseli; dosya yollarını Python tarafı alır */
+let derinlik = 0;
+window.addEventListener("dragenter", e => { e.preventDefault(); derinlik++; document.body.classList.add("surukleniyor"); });
+window.addEventListener("dragover", e => e.preventDefault());
+window.addEventListener("dragleave", () => { if (--derinlik <= 0) { derinlik = 0; document.body.classList.remove("surukleniyor"); } });
+window.addEventListener("drop", () => { derinlik = 0; document.body.classList.remove("surukleniyor"); });
+
+tazele();
+setInterval(tazele, 1500);
+</script>
+</body>
+</html>

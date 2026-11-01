@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-title" content="Demir Drop">
+<meta name="referrer" content="no-referrer">
+<link rel="apple-touch-icon" href="ikon.png">
+<title>Demir Drop</title>
+<style>
+  :root {
+    --zemin:#000; --yuzey:#1c1c1e; --yuzey2:#2c2c2e; --cizgi:rgba(84,84,88,.55);
+    --yazi:#fff; --soluk:rgba(235,235,245,.6); --mavi:#0a84ff; --yesil:#30d158; --kirmizi:#ff453a;
+    --halka:rgba(10,132,255,.32); --perde:rgba(0,0,0,.55);
+  }
+  @media (prefers-color-scheme: light) { :root {
+    --zemin:#f2f2f7; --yuzey:#fff; --yuzey2:#e5e5ea; --cizgi:rgba(60,60,67,.29);
+    --yazi:#000; --soluk:rgba(60,60,67,.6); --mavi:#007aff; --yesil:#34c759; --kirmizi:#ff3b30;
+    --halka:rgba(0,122,255,.28); --perde:rgba(0,0,0,.35);
+  } }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--zemin); color:var(--yazi);
+         font:17px/1.3 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif; }
+  button { font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+  input[type=file] { position:absolute; width:1px; height:1px; opacity:0; }
+
+  .ust { text-align:center; padding:calc(env(safe-area-inset-top) + 14px) 16px 0; }
+  .ust h1 { margin:0; font-size:17px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:7px; }
+  .ust h1 img { width:22px; height:22px; }
+  #durum { font-size:13px; color:var(--soluk); margin-top:2px; }
+  #durum.kopuk { color:var(--kirmizi); }
+
+  /* radar: AirDrop'un eş merkezli halkaları */
+  .radar { position:relative; height:340px; display:grid; place-items:center; overflow:hidden; }
+  .halka { position:absolute; left:50%; top:50%; border-radius:50%; border:1px solid var(--halka);
+           transform:translate(-50%,-50%); pointer-events:none; }
+  .halka.h1 { width:190px; height:190px; }
+  .halka.h2 { width:280px; height:280px; opacity:.65; }
+  .halka.h3 { width:380px; height:380px; opacity:.35; }
+  .dalga { position:absolute; left:50%; top:50%; width:130px; height:130px; margin:-65px; border-radius:50%;
+           border:1.5px solid var(--mavi); opacity:0; pointer-events:none; animation:dalga 3.2s ease-out infinite; }
+  .dalga.d2 { animation-delay:1.6s; }
+  @keyframes dalga { 0% { transform:scale(.8); opacity:.55; } 100% { transform:scale(3); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .dalga { animation:none; } }
+  .kopukmod .dalga { animation:none; }
+
+  .halkalar { position:absolute; inset:0; -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 45%,transparent 72%); mask-image:radial-gradient(circle at 50% 50%,#000 45%,transparent 72%); }
+  /* etiket yazıları daireden sarkar; halkaların merkezi dairenin merkezi olsun */
+  .cihaz { position:relative; z-index:1; width:112px; height:112px; cursor:pointer; }
+  .etiketler { position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); width:280px; text-align:center; }
+  .daire { position:relative; width:112px; height:112px; border-radius:50%; display:grid; place-items:center; color:#fff;
+           background:linear-gradient(180deg,#5aa9ff,#0a6be0); box-shadow:0 8px 28px rgba(10,132,255,.35); transition:transform .15s; }
+  .cihaz:active .daire { transform:scale(.94); }
+  .daire svg.monitor { width:54px; height:54px; }
+  .daire svg.tik { width:52px; height:52px; display:none; }
+  .gitti .daire { background:linear-gradient(180deg,#4cd964,#22a93f); box-shadow:0 8px 28px rgba(48,209,88,.35); }
+  .gitti svg.monitor { display:none; } .gitti svg.tik { display:block; }
+  .ilerleme { position:absolute; inset:-9px; width:130px; height:130px; transform:rotate(-90deg); opacity:0; transition:opacity .2s; }
+  .gonderiyor .ilerleme { opacity:1; }
+  .ilerleme circle { fill:none; stroke-width:4; }
+  .ilerleme .iz { stroke:var(--yuzey2); }
+  .ilerleme .dolu { stroke:var(--mavi); stroke-linecap:round; stroke-dasharray:380; stroke-dashoffset:380; transition:stroke-dashoffset .2s linear; }
+  .cihazadi { font-size:15px; font-weight:600; }
+  #altyazi { font-size:13px; color:var(--soluk); min-height:18px; margin-top:2px; }
+  .gitti #altyazi { color:var(--yesil); }
+
+  main { padding:0 16px calc(env(safe-area-inset-bottom) + 28px); max-width:560px; margin:auto; }
+  .grup { background:var(--yuzey); border-radius:12px; overflow:hidden; }
+  .satir { display:flex; align-items:center; gap:12px; min-height:50px; padding:0 16px; width:100%; text-align:left; }
+  .satir + .satir { border-top:.5px solid var(--cizgi); }
+  .satir .ikon { width:29px; height:29px; border-radius:7px; background:var(--mavi); color:#fff; display:grid; place-items:center; flex:none; }
+  .satir .ikon svg { width:18px; height:18px; }
+  .satir .ok { margin-left:auto; color:var(--soluk); }
+  .notcuk { font-size:13px; color:var(--soluk); margin:8px 16px 0; }
+  h2 { font-size:13px; font-weight:400; color:var(--soluk); margin:24px 16px 7px; }
+
+  .izgara { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; border-radius:12px; overflow:hidden; }
+  .kare { position:relative; aspect-ratio:1; background:var(--yuzey2); overflow:hidden; }
+  .kare img { width:100%; height:100%; object-fit:cover; display:block; -webkit-touch-callout:default; }
+  .kare .rozet { position:absolute; right:5px; bottom:5px; width:20px; height:20px; border-radius:50%; background:var(--yesil); color:#000;
+                 font-size:13px; font-weight:700; display:grid; place-items:center; }
+  .dosyasatir { display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:58px; }
+  .dosyasatir + .dosyasatir { border-top:.5px solid var(--cizgi); }
+  .dosyasatir .bilgi { flex:1; min-width:0; }
+  .dosyasatir .ad { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:16px; }
+  .dosyasatir .metin { white-space:pre-wrap; overflow-wrap:anywhere; max-height:120px; overflow:auto; font-size:16px; }
+  .alt { font-size:13px; color:var(--soluk); margin-top:1px; }
+  .kapsul { min-height:32px; padding:0 14px; border-radius:16px; background:var(--yuzey2); color:var(--mavi); font-size:15px; font-weight:600;
+            display:inline-flex; align-items:center; text-decoration:none; white-space:nowrap; }
+
+  /* AirDrop onay kartı */
+  .perde { position:fixed; inset:0; z-index:5; background:var(--perde); display:none; align-items:center; justify-content:center; padding:24px; }
+  .perde.acik { display:flex; animation:bel .18s ease-out; }
+  @keyframes bel { from { opacity:0; } }
+  .uyari { width:min(300px,100%); background:var(--yuzey); border-radius:16px; overflow:hidden; text-align:center; animation:cik .22s cubic-bezier(.2,.9,.3,1.15); }
+  @keyframes cik { from { transform:scale(1.12); opacity:0; } }
+  .uyari .baslik { padding:20px 18px 6px; font-weight:600; }
+  .uyari .aciklama { padding:0 18px 14px; font-size:14px; color:var(--soluk); overflow-wrap:anywhere; max-height:140px; overflow:auto; }
+  .onizleme { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; background:var(--yuzey2); }
+  .ikili { display:grid; grid-template-columns:1fr 1fr; border-top:.5px solid var(--cizgi); }
+  .ikili button { min-height:48px; color:var(--mavi); }
+  .ikili button + button { border-left:.5px solid var(--cizgi); font-weight:600; }
+  .ikili .ret { color:var(--kirmizi); }
+
+  /* alttan açılan sayfa */
+  .sayfa { position:fixed; inset:auto 0 0; z-index:6; max-height:88vh; overflow:auto; background:var(--zemin); border-radius:14px 14px 0 0;
+           padding:8px 0 calc(env(safe-area-inset-bottom) + 24px); transform:translateY(105%); transition:transform .28s cubic-bezier(.2,.8,.2,1); visibility:hidden; }
+  .sayfa.acik { transform:none; visibility:visible; }
+  .sayfabas { position:sticky; top:0; display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:var(--zemin); font-weight:600; }
+  .sayfabas button { color:var(--mavi); font-weight:600; min-height:32px; }
+  .sayfa h3 { font-size:15px; margin:18px 16px 6px; }
+  .sayfa ol { margin:0 16px; padding-left:20px; font-size:15px; color:var(--yazi); }
+  .sayfa li { margin-bottom:7px; }
+  .sayfa code { font:13px ui-monospace,Menlo,monospace; background:var(--yuzey2); padding:1px 5px; border-radius:5px; }
+  .kopyala { margin:6px 16px 0; width:calc(100% - 32px); min-height:44px; background:var(--yuzey); border-radius:10px; color:var(--mavi); font-weight:600; }
+  textarea { width:100%; min-height:90px; resize:none; background:transparent; color:var(--yazi); border:0; padding:12px 16px; font:inherit; outline:none; display:block; }
+</style>
+</head>
+<body>
+<div class="ust">
+  <h1><img src="ikon.png" alt="">Demir Drop</h1>
+  <div id="durum">Aranıyor…</div>
+</div>
+
+<div class="radar" id="radar">
+  <div class="halkalar">
+    <div class="halka h1"></div><div class="halka h2"></div><div class="halka h3"></div>
+    <div class="dalga"></div><div class="dalga d2"></div>
+  </div>
+  <label class="cihaz" id="cihaz" for="sec">
+    <div class="daire">
+      <svg class="ilerleme" viewBox="0 0 130 130"><circle class="iz" cx="65" cy="65" r="60"/><circle class="dolu" id="dolu" cx="65" cy="65" r="60"/></svg>
+      <svg class="monitor" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h15A1.5 1.5 0 0 1 21 4.5v10a1.5 1.5 0 0 1-1.5 1.5H14l.5 3H17a.75.75 0 0 1 0 1.5H7A.75.75 0 0 1 7 19h2.5l.5-3H4.5A1.5 1.5 0 0 1 3 14.5v-10Z"/></svg>
+      <svg class="tik" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+    </div>
+    <div class="etiketler">
+      <div class="cihazadi" id="pcAdi">Bilgisayarım</div>
+      <div id="altyazi">Dokun, gönder</div>
+    </div>
+  </label>
+</div>
+<input id="sec" type="file" multiple>
+
+<main>
+  <div class="grup">
+    <button class="satir" id="metinAc">
+      <span class="ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+      Metin ya da link gönder<span class="ok">›</span>
+    </button>
+    <button class="satir" id="kurAc">
+      <span class="ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>
+      <span id="kurYazi">Paylaş menüsüne ekle</span><span class="ok">›</span>
+    </button>
+  </div>
+  <p class="notcuk" id="kaliteNotu">Buradan seçince iPhone fotoğrafı sıkıştırabiliyor. Orijinal kalite için Paylaş menüsüne ekle.</p>
+
+  <div id="gelenBolum" hidden>
+    <h2>PC'DEN GELENLER</h2>
+    <div class="izgara" id="izgara"></div>
+    <div class="grup" id="dosyalar" style="margin-top:10px"></div>
+    <p class="notcuk" id="gelenNot"></p>
+  </div>
+</main>
+
+<!-- AirDrop onay kartı -->
+<div class="perde" id="onay" role="dialog" aria-modal="true" aria-labelledby="onayBaslik">
+  <div class="uyari">
+    <img class="onizleme" id="onayResim" alt="" hidden>
+    <div class="baslik" id="onayBaslik">Demir Drop</div>
+    <div class="aciklama" id="onayYazi"></div>
+    <div class="ikili">
+      <button class="ret" id="reddet">Reddet</button>
+      <button id="kabul">Kabul Et</button>
+    </div>
+  </div>
+</div>
+
+<div class="perde" id="sayfaPerde"></div>
+
+<div class="sayfa" id="metinSayfa">
+  <div class="sayfabas"><button data-kapat>Vazgeç</button><span>Metin gönder</span><button id="metinGonder">Gönder</button></div>
+  <div class="grup" style="margin:6px 16px 0"><textarea id="yazi" placeholder="Metin ya da link" aria-label="PC'ye gönderilecek metin"></textarea></div>
+  <p class="notcuk">PC'nin panosuna düşer, Ctrl+V ile yapıştırırsın.</p>
+</div>
+
+<div class="sayfa" id="kurSayfa">
+  <div class="sayfabas"><span>Paylaş menüsü ve Fotoğraflar</span><button data-kapat>Bitti</button></div>
+  <p class="notcuk">Kestirmeler uygulamasında iki kestirme kuruyorsun, bir kere. iPhone dili Türkçeyse eylem adları farklı çıkabilir, İngilizcesini de yazdım.</p>
+
+  <h3>1. Demir Drop: Paylaş'tan PC'ye, orijinal kalite</h3>
+  <ol>
+    <li>Kestirmeler'de <b>+</b> ile yeni kestirme aç, adını <code>Demir Drop</code> yap.</li>
+    <li><b>Her Biriyle Tekrarla</b> (Repeat with Each) ekle, girdisi <b>Kestirme Girdisi</b> olsun.</li>
+    <li>İçine <b>URL'nin İçeriğini Al</b> (Get Contents of URL) koy, aşağıdaki adresi yapıştır.</li>
+    <li>Yöntem <b>POST</b>, istek gövdesi <b>Form</b>. Yeni alan ekle, türü <b>Dosya</b>, adı <code>dosya</code>, değeri <b>Tekrarlanan Öge</b> (Repeat Item).</li>
+    <li>Kestirme ayarlarından <b>Paylaşma Sayfasında Göster</b> (Show in Share Sheet) aç.</li>
+  </ol>
+  <button class="kopyala" data-kopya="paylas">Gönderme adresini kopyala</button>
+
+  <h3>2. Demir Drop Al: PC'den gelenler Fotoğraflar'a</h3>
+  <ol>
+    <li>Yeni kestirme aç, adını tam olarak <code>Demir Drop Al</code> yap.</li>
+    <li><b>URL'nin İçeriğini Al</b> ekle, aşağıdaki adresi yapıştır.</li>
+    <li><b>Metni Ayır</b> (Split Text) ekle, ayırıcı <b>Yeni Satırlar</b>.</li>
+    <li><b>Her Biriyle Tekrarla</b> ekle, girdisi ayrılan metin olsun.</li>
+    <li>İçine <b>URL'nin İçeriğini Al</b> (adres: Tekrarlanan Öge) ve <b>Fotoğraf Albümüne Kaydet</b> (Save to Photo Album) ekle.</li>
+  </ol>
+  <button class="kopyala" data-kopya="bekleyen">Alma adresini kopyala</button>
+
+  <h3>Hepsi bu</h3>
+  <ol style="list-style:none;padding:0">
+    <li>Galeride fotoğrafı seç, Paylaş'a bas, listede <b>Demir Drop</b>'u seç. PC'den gelen fotoğrafta <b>Kabul Et</b> dersen kendiliğinden Fotoğraflar'a kaydolur.</li>
+  </ol>
+  <button class="kopyala" id="kurdum" style="background:var(--mavi);color:#fff">İkisini de kurdum</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const kok = location.href.split(/[?#]/)[0];
+
+function boyut(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b / 1024).toFixed(0) + " KB";
+  if (b < 1073741824) return (b / 1048576).toFixed(1) + " MB";
+  return (b / 1073741824).toFixed(2) + " GB";
+}
+function el(etiket, sinif, yazi) {
+  const e = document.createElement(etiket);
+  if (sinif) e.className = sinif;
+  if (yazi !== undefined) e.textContent = yazi;
+  return e;
+}
+const kestirmeVar = () => localStorage.getItem("kestirme") === "1";
+const dosyaYolu = o => "api/dosya/" + o.id + "/" + encodeURIComponent(o.ad);
+
+/* ---- telefondan PC'ye ---- */
+const CEVRE = 2 * Math.PI * 60;
+$("dolu").style.strokeDasharray = CEVRE;
+let bitisZamani;
+
+function yukle(dosya, ilerleme) {
+  return new Promise((bitti, patladi) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", "api/yukle?ad=" + encodeURIComponent(dosya.name));
+    x.upload.onprogress = e => { if (e.lengthComputable) ilerleme(e.loaded); };
+    x.onload = () => x.status === 200 ? bitti(JSON.parse(x.responseText)) : patladi(x.responseText || "PC kabul etmedi");
+    x.onerror = x.ontimeout = () => patladi("Bağlantı koptu");
+    x.send(dosya);
+  });
+}
+
+async function gonder(dosyalar) {
+  const c = $("cihaz");
+  clearTimeout(bitisZamani);
+  c.classList.remove("gitti");
+  c.classList.add("gonderiyor");
+  const toplam = dosyalar.reduce((t, d) => t + d.size, 0) || 1;
+  let biten = 0, son = null, hatali = 0;
+  for (const [i, d] of dosyalar.entries()) {
+    const yaz = yuklenen => {
+      const oran = (biten + yuklenen) / toplam;
+      $("dolu").style.strokeDashoffset = CEVRE * (1 - oran);
+      $("altyazi").textContent = (dosyalar.length > 1 ? `${i + 1}/${dosyalar.length} · ` : "") + "Gönderiliyor %" + Math.round(oran * 100);
+    };
+    yaz(0);
+    try { son = await yukle(d, yaz); } catch { hatali++; }
+    biten += d.size;
+  }
+  c.classList.remove("gonderiyor");
+  $("dolu").style.strokeDashoffset = CEVRE;
+  if (hatali) {
+    $("altyazi").textContent = hatali === dosyalar.length ? "Gidemedi, PC açık mı?" : `${hatali} dosya gidemedi`;
+    return;
+  }
+  c.classList.add("gitti");
+  const bilgi = dosyalar.length === 1 && son.cozunurluk ? `${son.cozunurluk} · ${son.bicim}` : `${dosyalar.length} dosya`;
+  $("altyazi").textContent = "Gönderildi · " + bilgi;
+  bitisZamani = setTimeout(() => { c.classList.remove("gitti"); $("altyazi").textContent = "Dokun, gönder"; }, 5000);
+}
+
+$("sec").onchange = e => {
+  const dosyalar = [...e.target.files];
+  e.target.value = "";
+  if (dosyalar.length) gonder(dosyalar);
+};
+
+/* ---- alttan açılan sayfalar ---- */
+function sayfaAc(id) {
+  $("sayfaPerde").classList.add("acik");
+  $(id).classList.add("acik");
+}
+function sayfalariKapat() {
+  $("sayfaPerde").classList.remove("acik");
+  document.querySelectorAll(".sayfa.acik").forEach(s => s.classList.remove("acik"));
+}
+$("sayfaPerde").onclick = sayfalariKapat;
+document.querySelectorAll("[data-kapat]").forEach(b => b.onclick = sayfalariKapat);
+$("metinAc").onclick = () => { sayfaAc("metinSayfa"); $("yazi").focus(); };
+$("kurAc").onclick = () => sayfaAc("kurSayfa");
+
+$("metinGonder").onclick = async () => {
+  const metin = $("yazi").value.trim();
+  if (!metin) return $("yazi").focus();
+  try {
+    const r = await fetch("api/metin", { method: "POST", body: metin });
+    if (!r.ok) throw 0;
+    $("yazi").value = "";
+    sayfalariKapat();
+    $("altyazi").textContent = "Metin PC'nin panosunda";
+    setTimeout(() => $("altyazi").textContent = "Dokun, gönder", 3000);
+  } catch { $("metinGonder").textContent = "Olmadı"; setTimeout(() => $("metinGonder").textContent = "Gönder", 1600); }
+};
+
+/* HTTP'de navigator.clipboard yok, eski yol */
+function kopyala(metin) {
+  const t = document.createElement("textarea");
+  t.value = metin;
+  t.setAttribute("readonly", "");
+  t.style.cssText = "position:fixed;top:0;opacity:0;font-size:16px";
+  document.body.append(t);
+  t.setSelectionRange(0, metin.length);
+  t.select();
+  let oldu = false;
+  try { oldu = document.execCommand("copy"); } catch {}
+  t.remove();
+  return oldu;
+}
+document.querySelectorAll("[data-kopya]").forEach(b => {
+  const eski = b.textContent;
+  b.onclick = () => {
+    const adres = kok + (b.dataset.kopya === "paylas" ? "api/paylas" : "api/bekleyenler");
+    b.textContent = kopyala(adres) ? "Kopyalandı ✓" : adres;
+    setTimeout(() => b.textContent = eski, 2000);
+  };
+});
+function kurulumYaz() {
+  const v = kestirmeVar();
+  $("kurYazi").textContent = v ? "Kestirme kurulumu" : "Paylaş menüsüne ekle";
+  $("kaliteNotu").hidden = v;
+}
+$("kurdum").onclick = () => { localStorage.setItem("kestirme", "1"); kurulumYaz(); sayfalariKapat(); gelenCiz(); };
+
+/* ---- PC'den telefona: onay kartı ---- */
+let ogeler = [], surum = 0, kart = null, pcAdi = "Bilgisayarım";
+const gorulenler = new Set(JSON.parse(sessionStorage.getItem("gorulen") || "[]"));
+const gorulduIsaretle = o => { gorulenler.add(o.id); sessionStorage.setItem("gorulen", JSON.stringify([...gorulenler])); };
+
+function kartSirasi() {
+  if (kart || $("onay").classList.contains("acik")) return;
+  const yeni = ogeler.filter(o => !o.alindi && !gorulenler.has(o.id));
+  if (!yeni.length) return;
+  kart = yeni;
+  const medya = yeni.filter(o => o.medya), ilkGorsel = yeni.find(o => o.gorsel);
+  const r = $("onayResim");
+  r.hidden = !ilkGorsel;
+  if (ilkGorsel) r.src = dosyaYolu(ilkGorsel) + "?onizleme";
+  $("onayBaslik").textContent = pcAdi;
+  if (yeni.length === 1 && yeni[0].tur === "metin") {
+    $("onayYazi").textContent = yeni[0].metin;
+    $("kabul").textContent = /^https?:\/\/\S+$/.test(yeni[0].metin.trim()) ? "Aç" : "Kopyala";
+  } else {
+    const ad = medya.length === yeni.length ? (yeni.every(o => o.gorsel) ? "fotoğraf" : "fotoğraf ve video") : "dosya";
+    $("onayYazi").textContent = yeni.length === 1 ? `Bir ${ad} paylaşıyor: ${yeni[0].ad}` : `${yeni.length} ${ad} paylaşıyor`;
+    $("kabul").textContent = "Kabul Et";
+  }
+  $("onay").classList.add("acik");
+}
+
+function kartiKapat() {
+  kart.forEach(gorulduIsaretle);
+  kart = null;
+  $("onay").classList.remove("acik");
+  setTimeout(kartSirasi, 250);
+}
+
+$("reddet").onclick = async () => {
+  const giden = kart;
+  kartiKapat();
+  await Promise.all(giden.map(o => fetch("api/kaldir/" + o.id, { method: "POST" })));
+  tazele(true);
+};
+
+$("kabul").onclick = () => {
+  const gelen = kart;
+  kartiKapat();
+  if (gelen.length === 1 && gelen[0].tur === "metin") {
+    const m = gelen[0].metin.trim();
+    if (/^https?:\/\/\S+$/.test(m)) window.open(m, "_blank", "noreferrer"); else kopyala(m);
+    fetch("api/alindi", { method: "POST", body: gelen[0].id });
+    return;
+  }
+  if (gelen.some(o => o.medya) && kestirmeVar()) {
+    location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent("Demir Drop Al");
+    return;
+  }
+  if (gelen.length === 1 && !gelen[0].medya) {
+    const a = el("a");
+    a.href = dosyaYolu(gelen[0]); a.download = gelen[0].ad;
+    document.body.append(a); a.click(); a.remove();
+    return;
+  }
+  $("gelenBolum").scrollIntoView({ behavior: "smooth" });
+};
+
+/* ---- gelenler listesi ---- */
+function gelenCiz() {
+  const izgara = [], satirlar = [];
+  for (const o of ogeler) {
+    if (o.gorsel) {
+      const k = el("div", "kare");
+      const a = el("a");
+      a.href = dosyaYolu(o) + "?onizleme"; a.target = "_blank";
+      const i = el("img");
+      i.src = dosyaYolu(o) + "?onizleme"; i.alt = o.ad; i.loading = "lazy";
+      a.append(i); k.append(a);
+      if (o.alindi) { const r = el("span", "rozet", "✓"); k.append(r); }
+      izgara.push(k);
+      continue;
+    }
+    const s = el("div", "dosyasatir"), b = el("div", "bilgi");
+    if (o.tur === "metin") {
+      b.append(el("div", "metin", o.metin));
+      s.append(b);
+      const k = el("button", "kapsul", "Kopyala");
+      k.onclick = () => {
+        k.textContent = kopyala(o.metin) ? "Tamam" : "Olmadı";
+        setTimeout(() => k.textContent = "Kopyala", 1500);
+        fetch("api/alindi", { method: "POST", body: o.id });
+      };
+      s.append(k);
+    } else {
+      b.append(el("div", "ad", o.ad), el("div", "alt", boyut(o.boyut) + (o.alindi ? " · alındı" : "")));
+      s.append(b);
+      const a = el("a", "kapsul", "İndir");
+      a.href = dosyaYolu(o); a.download = o.ad;
+      s.append(a);
+    }
+    const x = el("button", "kapsul", "×");
+    x.setAttribute("aria-label", "Listeden kaldır");
+    x.style.color = "var(--soluk)";
+    x.onclick = async () => { await fetch("api/kaldir/" + o.id, { method: "POST" }); tazele(true); };
+    s.append(x);
+    satirlar.push(s);
+  }
+  $("izgara").replaceChildren(...izgara);
+  $("izgara").hidden = !izgara.length;
+  $("dosyalar").replaceChildren(...satirlar);
+  $("dosyalar").hidden = !satirlar.length;
+  $("gelenBolum").hidden = !ogeler.length;
+  $("gelenNot").textContent = izgara.length
+    ? (kestirmeVar() ? "Kartta Kabul Et dersen Fotoğraflar'a kaydolur." : "Görsele dokun, açılınca basılı tut, Fotoğraflar'a Ekle de.")
+    : "";
+}
+
+async function tazele(zorla) {
+  try {
+    const r = await fetch("api/ogeler", { cache: "no-store" });
+    if (!r.ok) throw 0;
+    const v = await r.json();
+    $("durum").className = "";
+    $("durum").textContent = "PC'ye bağlı";
+    $("radar").classList.remove("kopukmod");
+    if (v.surum === surum && !zorla) return;
+    surum = v.surum;
+    ogeler = v.ogeler;
+    pcAdi = v.pc;
+    $("pcAdi").textContent = pcAdi;
+    gelenCiz();
+    kartSirasi();
+  } catch {
+    $("durum").className = "kopuk";
+    $("durum").textContent = "PC'ye ulaşamıyorum";
+    $("radar").classList.add("kopukmod");
+  }
+}
+kurulumYaz();
+tazele();
+setInterval(() => { if (!document.hidden) tazele(); }, 2000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) tazele(); });
+</script>
+</body>
+</html>

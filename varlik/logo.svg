@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Demir Drop">
+  <defs>
+    <linearGradient id="z" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cb2ff"/><stop offset="1" stop-color="#0a6be0"/></linearGradient>
+    <clipPath id="k"><rect width="512" height="512" rx="114"/></clipPath>
+  </defs>
+  <g clip-path="url(#k)">
+    <rect width="512" height="512" fill="url(#z)"/>
+    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="30">
+      <path d="M176 200a80 80 0 0 1 160 0"/>
+      <path d="M112 192a144 144 0 0 1 288 0" opacity=".82"/>
+      <path d="M48 184a208 208 0 0 1 416 0" opacity=".55"/>
+    </g>
+    <rect x="226" y="176" width="60" height="46" rx="14" fill="#25221f"/>
+    <path d="M170 208h172q15 0 18 15l44 217H108l44-217q3-15 18-15Z" fill="#25221f"/>
+    <path d="M152 300l9-48q3-14 18-20l26-8q-30 20-53 76ZM360 340l-10-48 18 96Z" fill="#d9601a"/>
+    <path d="M164 298h78q-3 50-39 50t-39-50ZM270 298h78q-3 50-39 50t-39-50Z" fill="#f4e8cf"/>
+    <path d="M186 298h34q0 22-17 22t-17-22ZM292 298h34q0 22-17 22t-17-22Z" fill="#14120f"/>
+    <path d="M240 272h32l13 94h-58Z" fill="#4c4640"/>
+    <path d="M78 512v-98q178 42 356 0v98Z" fill="#14120f"/>
+    <path d="M96 512v-92l44 8v84ZM182 512v-76l48 4v72ZM282 512v-72l48-4v76ZM372 512v-84l44-8v92Z" fill="#f4e8cf"/>
+  </g>
+</svg>

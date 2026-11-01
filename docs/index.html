@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demir Drop: iPhone ile Windows arasında dosya at</title>
+<meta name="description" content="iPhone ile Windows arasında fotoğraf, video, dosya ve metin atar. Aynı modem yeterli. Hesap yok, bulut yok.">
+<meta property="og:title" content="Demir Drop">
+<meta property="og:description" content="AirDrop Windows'a gelmedi. Demir geldi.">
+<meta property="og:image" content="https://berkdemir18.github.io/Demir-Drop/img/pc.webp">
+<meta name="theme-color" content="#0a6be0">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=IBM+Plex+Mono:wght@500&family=Onest:wght@400;500;700&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+  :root {
+    --dokum:#231f1c; --kurum:#171412; --celik:#3a3530; --krem:#f4e8cf; --soluk:#b9ad9b; --pas:#e06a22; --mavi:#0a6be0; --gok:#5cb2ff;
+    --baslik:"Alfa Slab One",Georgia,serif; --govde:"Onest",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--dokum); color:var(--krem); font:17px/1.55 var(--govde); overflow-x:hidden; }
+  img { display:block; max-width:100%; height:auto; }
+  a { color:inherit; }
+  a:focus-visible { outline:3px solid var(--krem); outline-offset:3px; }
+  h1, h2 { font-family:var(--baslik); font-weight:400; margin:0; letter-spacing:.005em; }
+  .kap { width:min(1160px,100% - 48px); margin-inline:auto; }
+
+  /* ---- hero: logonun kendisi. Mavi zemin, Demir'in tepesinden çıkan halkalar ---- */
+  .sahne { position:relative; isolation:isolate; min-height:min(860px,100svh); overflow:hidden; display:flex; flex-direction:column; justify-content:space-between;
+           background:linear-gradient(180deg,var(--gok) 0%,#2b8bf0 48%,var(--mavi) 100%); color:#fff; }
+  .ust { display:flex; justify-content:space-between; align-items:center; padding-block:22px; position:relative; z-index:3; }
+  .marka { display:flex; align-items:center; gap:10px; font-weight:700; text-decoration:none; }
+  .marka img { width:34px; height:34px; }
+  .ust nav a { font-weight:500; text-underline-offset:4px; }
+
+  .govdesi { position:relative; z-index:2; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); align-items:end; flex:1; gap:24px; }
+  .yazi { align-self:center; padding-block:12px 40px; }
+  h1 { font-size:clamp(46px,6.4vw,96px); line-height:.98; color:#fff; }
+  h1 span { display:block; color:var(--kurum); }
+  .alt { font-size:clamp(18px,1.7vw,22px); max-width:24em; margin:24px 0 30px; font-weight:500; line-height:1.4; }
+  .dugme { display:inline-flex; align-items:center; gap:10px; background:var(--kurum); color:var(--krem); font-weight:700; padding:16px 26px; border-radius:6px; text-decoration:none; box-shadow:0 5px 0 #000; transition:transform .1s,box-shadow .1s; }
+  .dugme:hover { transform:translateY(2px); box-shadow:0 3px 0 #000; }
+  .dugme:active { transform:translateY(5px); box-shadow:none; }
+  .kimlik { display:block; margin-top:16px; font:500 13.5px var(--mono); }
+
+  .demir { position:relative; align-self:end; justify-self:center; width:min(100%,430px); margin-bottom:-74px; }
+  .demir img { position:relative; z-index:2; filter:drop-shadow(0 12px 0 rgba(0,0,0,.14)); }
+  /* halkaların merkezi Demir'in tepe topuzu; AirDrop dalgası oradan çıkar */
+  .halkalar { position:absolute; left:51.8%; top:13.3%; width:0; height:0; z-index:1; }
+  .halkalar i { position:absolute; left:0; top:0; border:clamp(9px,1.2vw,15px) solid #fff; border-radius:50%; transform:translate(-50%,-50%); }
+  .halkalar i:nth-child(1) { width:230px; height:230px; opacity:.95; }
+  .halkalar i:nth-child(2) { width:430px; height:430px; opacity:.6; }
+  .halkalar i:nth-child(3) { width:660px; height:660px; opacity:.32; }
+  .halkalar i:nth-child(4) { width:920px; height:920px; opacity:.16; }
+  .halkalar b { position:absolute; left:0; top:0; width:230px; height:230px; margin:-115px; border-radius:50%; border:3px solid #fff; opacity:0; animation:yayil 3.6s cubic-bezier(.2,.6,.4,1) infinite; }
+  .halkalar b + b { animation-delay:1.8s; }
+  @keyframes yayil { 0% { transform:scale(.5); opacity:.75; } 100% { transform:scale(4.4); opacity:0; } }
+
+  /* imza: atkı. Yüklenirken aktarım çubuğu gibi soldan sağa örülür */
+  .atki { position:relative; z-index:3; height:74px; background:var(--kurum); overflow:hidden; border-block:5px solid var(--kurum); }
+  .atki::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg,var(--krem) 0 54px,var(--kurum) 54px 108px); animation:orul 1.8s cubic-bezier(.3,.7,.3,1) both; }
+  @keyframes orul { from { clip-path:inset(0 100% 0 0); } to { clip-path:inset(0 0 0 0); } }
+
+  section { padding-block:clamp(70px,9vw,120px); }
+  h2 { font-size:clamp(34px,4.6vw,62px); line-height:1.04; }
+  .ara { color:var(--soluk); max-width:36em; margin:16px 0 0; font-size:18px; }
+
+  /* ---- telefon: iki ekran ---- */
+  .telefon { display:grid; grid-template-columns:1fr auto; gap:clamp(30px,6vw,90px); align-items:center; }
+  .ekranlar { display:flex; gap:clamp(12px,2vw,26px); align-items:flex-start; }
+  .ekranlar figure { margin:0; width:clamp(150px,21vw,272px); }
+  .ekranlar figure:last-child { margin-top:58px; }
+  .ekranlar img { border-radius:32px; border:7px solid var(--kurum); box-shadow:0 0 0 1px var(--celik); }
+  figcaption { font:500 13px var(--mono); color:var(--soluk); margin-top:12px; }
+
+  /* ---- pc: geniş pencere, kenardan taşar ---- */
+  .pc { background:var(--kurum); }
+  .pencere { margin-top:44px; border-radius:10px; overflow:hidden; box-shadow:0 0 0 1px var(--celik),0 30px 70px rgba(0,0,0,.5); }
+
+  /* ---- kalite ---- */
+  .kalite { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:clamp(30px,6vw,90px); align-items:start; }
+  .kalite p { margin:0 0 16px; }
+  .kalite p:last-child { margin:0; color:var(--soluk); }
+  .vurgu { color:var(--pas); }
+
+  /* ---- kurulum: gerçekten sıralı ---- */
+  .kurulum { background:var(--kurum); }
+  ol.adimlar { list-style:none; padding:0; margin:46px 0 0; display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(22px,3vw,44px); counter-reset:a; }
+  ol.adimlar li { counter-increment:a; border-top:5px solid var(--krem); padding-top:14px; }
+  ol.adimlar li::before { content:counter(a); font:44px/1 var(--baslik); color:var(--gok); display:block; margin-bottom:12px; }
+  ol.adimlar b { display:block; font-size:19px; margin-bottom:6px; }
+  ol.adimlar p { margin:0; color:var(--soluk); font-size:16px; }
+  code { font:500 14px var(--mono); background:var(--celik); padding:2px 6px; border-radius:4px; color:var(--krem); }
+
+  /* ---- dürüst kısım: krem etiket ---- */
+  .durust { background:var(--krem); color:var(--kurum); position:relative; overflow:hidden; }
+  .durust .ara { color:#5c5247; }
+  .durust .ic { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:40px; align-items:end; }
+  .tablo { overflow-x:auto; margin-top:34px; }
+  table { border-collapse:collapse; width:100%; min-width:520px; font-size:17px; }
+  th, td { padding:13px 10px; text-align:center; border-bottom:2px solid var(--kurum); }
+  th:first-child, td:first-child { text-align:left; padding-left:0; }
+  thead th { font:500 13px var(--mono); }
+  td.var { font-weight:700; color:#0a55b3; font-size:20px; }
+  td.yok { color:#8c7f6e; font-size:20px; }
+  .demirnot { width:100%; max-width:290px; margin:auto; }
+  .notlar { margin:30px 0 0; padding:0; list-style:none; columns:2; column-gap:40px; font-size:16px; }
+  .notlar li { break-inside:avoid; margin-bottom:12px; padding-left:16px; border-left:4px solid var(--pas); }
+
+  footer { padding-block:34px 44px; font-size:14.5px; color:var(--soluk); }
+  footer .sira { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 30px; }
+  footer a { text-underline-offset:3px; }
+
+  @media (max-width:860px) {
+    .sahne { min-height:0; }
+    .govdesi { grid-template-columns:1fr; }
+    .yazi { padding-bottom:10px; }
+    .demir { width:min(68%,310px); margin-top:110px; margin-bottom:-52px; }
+    .atki { height:56px; }
+    .telefon, .kalite, .durust .ic { grid-template-columns:1fr; }
+    .ekranlar figure { width:min(44vw,250px); }
+    .ekranlar figure:last-child { margin-top:34px; }
+    ol.adimlar { grid-template-columns:1fr; }
+    .demirnot { max-width:190px; }
+    .notlar { columns:1; }
+    .halkalar i:nth-child(1) { width:170px; height:170px; }
+    .halkalar i:nth-child(2) { width:320px; height:320px; }
+    .halkalar i:nth-child(3) { width:490px; height:490px; }
+    .halkalar i:nth-child(4) { width:690px; height:690px; }
+    .halkalar b { width:170px; height:170px; margin:-85px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    html { scroll-behavior:auto; }
+    .halkalar b { animation:none; display:none; }
+    .atki::before { animation:none; }
+    .dugme { transition:none; }
+  }
+</style>
+</head>
+<body>
+<header class="sahne">
+  <div class="kap ust">
+    <a class="marka" href="#"><img src="favicon.svg" alt="" width="34" height="34">Demir Drop</a>
+    <nav><a href="https://github.com/berkdemir18/Demir-Drop">Kaynak kod</a></nav>
+  </div>
+  <div class="kap govdesi">
+    <div class="yazi">
+      <h1>AirDrop Windows'a gelmedi. <span>Demir geldi.</span></h1>
+      <p class="alt">iPhone ile Windows arasında fotoğraf, video, dosya ve metin atar. Aynı modem yeterli. Hesap yok, bulut yok, kablo yok.</p>
+      <a class="dugme" href="https://github.com/berkdemir18/Demir-Drop/releases/latest/download/DemirDrop-1.0.0-windows-x64.zip">Windows için indir</a>
+      <span class="kimlik">v1.0.0 · 26 MB · Windows 10 ve 11, 64 bit</span>
+    </div>
+    <div class="demir">
+      <div class="halkalar" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b><b></b></div>
+      <img src="img/demir.webp" width="815" height="900" alt="Demir: atkılı, bezgin bakışlı döküm demir maskot">
+    </div>
+  </div>
+  <div class="atki" aria-hidden="true"></div>
+</header>
+
+<main>
+  <section>
+    <div class="kap telefon">
+      <div>
+        <h2>Uygulama yok. Safari yeter.</h2>
+        <p class="ara">PC'deki QR'ı kamerayla okutuyorsun, sayfa açılıyor. App Store'dan bir şey indirmiyorsun. Ana ekrana ekleyince ikonu da oluyor.</p>
+        <p class="ara">PC'den bir şey atınca telefonda kart çıkıyor: Kabul Et ya da Reddet. Tanıdık geldiyse sebebi var.</p>
+      </div>
+      <div class="ekranlar">
+        <figure><img src="img/telefon-ana.webp" width="390" height="654" alt="Telefon sayfası: ortada bilgisayar simgesi ve etrafında radar halkaları" loading="lazy"><figcaption>Dokun, gönder</figcaption></figure>
+        <figure><img src="img/telefon-kart.webp" width="390" height="654" alt="PC'den gelen fotoğraf için Kabul Et ve Reddet düğmeli onay kartı" loading="lazy"><figcaption>PC'den geleni sen onaylarsın</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="pc">
+    <div class="kap">
+      <h2>Sağ tıkla, Gönder, iPhone'a At.</h2>
+      <p class="ara">Windows'un Gönder menüsüne kendini ekliyor. Telefondan gelenler İndirilenler klasörüne düşüyor, pencerede galeri olarak da duruyor. Metin atarsan PC'nin panosuna gidiyor.</p>
+      <div class="pencere"><img src="img/pc.webp" width="1680" height="1080" alt="Demir Drop penceresi: solda QR kod, sağda gönderilenler ve gelen fotoğraflar" loading="lazy"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kap kalite">
+      <h2>Fotoğrafı bozan <span class="vurgu">biz değiliz.</span></h2>
+      <div>
+        <p>Demir Drop dosyaya dokunmuyor: ne geldiyse diske o yazılıyor. Çözünürlüğü ve biçimi gönderince yazıyor, kendin de bakabilirsin.</p>
+        <p>Ama Safari'nin dosya seçicisi HEIC fotoğrafı yolda JPEG'e çevirebiliyor. Orijinali istiyorsan iki iOS kestirmesi var: biri galerideki Paylaş menüsünden PC'ye atıyor, öteki PC'den geleni Fotoğraflar'a kaydediyor.</p>
+        <p>Kestirmeleri kendin kuruyorsun, adımlar telefon sayfasında yazıyor.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="kurulum">
+    <div class="kap">
+      <h2>Kurulum</h2>
+      <ol class="adimlar">
+        <li><b>Zip'i aç, DemirDrop.exe'yi çalıştır</b><p>Kod imzası yok, Windows "tanınmayan uygulama" diyebilir. Ek bilgi, yine de çalıştır.</p></li>
+        <li><b>Güvenlik duvarına izin ver</b><p>Bir kere sorar. Yalnızca yerel ağa, <code>8765</code> portunu açar.</p></li>
+        <li><b>QR'ı iPhone kamerasıyla okut</b><p>Telefon Wi-Fi'da ve PC'yle aynı modemde olsun. Olay bu kadar.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="durust">
+    <div class="kap">
+      <div class="ic">
+        <div>
+          <h2>Dürüst kısım</h2>
+          <p class="ara">Apple'ın ürünüyle yarışmıyor. Sadece Apple'ın gitmediği yere gidiyor.</p>
+        </div>
+        <img class="demirnot" src="img/demir-omuz.webp" alt="Omuz silken Demir" loading="lazy">
+      </div>
+      <div class="tablo">
+        <table>
+          <thead><tr><th scope="col">Özellik</th><th scope="col">AirDrop</th><th scope="col">Demir Drop</th></tr></thead>
+          <tbody>
+            <tr><td>iPhone ile Windows arasında çalışır</td><td class="yok">—</td><td class="var">✓</td></tr>
+            <tr><td>Hesap ve bulut gerektirmez</td><td class="var">✓</td><td class="var">✓</td></tr>
+            <tr><td>Modem olmadan çalışır</td><td class="var">✓</td><td class="yok">—</td></tr>
+            <tr><td>Sayfa kapalıyken de ekrana düşer</td><td class="var">✓</td><td class="yok">—</td></tr>
+            <tr><td>Aktarım şifrelidir</td><td class="var">✓</td><td class="yok">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="notlar">
+        <li>Bağlantı şifresiz HTTP. Ev gibi güvendiğin ağda kullan, kafede açma.</li>
+        <li>QR'daki adres parola gibi: bilen, sen açıkken ağındaki PC'ye dosya atabilir. Paylaşma.</li>
+        <li>iPhone'un AirDrop listesinde çıkmaz, Apple izin vermiyor. Paylaş menüsünde kestirme olarak çıkar.</li>
+        <li>Modem PC'ye yeni IP verirse ana ekrandaki ikon ve kestirmeler eski adreste kalır, QR'ı yeniden okut.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="kap sira">
+    <span>MIT lisanslı. Yapay zekâ desteğiyle geliştirildi. <a href="https://github.com/berkdemir18/Demir-Drop">GitHub</a></span>
+    <span>AirDrop, Apple Inc.'in markasıdır. Bu projenin Apple'la ilgisi yok. Demir'in de.</span>
+  </div>
+</footer>
+</body>
+</html>

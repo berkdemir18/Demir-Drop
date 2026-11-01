@@ -1,0 +1,5 @@
+pywebview
+pystray
+segno
+pillow
+pillow-heif

@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.derleme/
+build/
+dist/
+*.spec
+varlik/logo-1024.png
